@@ -1,84 +1,70 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import Note from './components/Note'
 import noteService from './services/notes'
 
 const App = () => {
-  const [notes, setNotes] = useState([])
-  const [newNote, setNewNote] = useState('')
-  const [showAll, setShowAll] = useState(true)
+  const [persons, setPersons] = useState([])
+  const [newName, setNewName] = useState('')
+  const [newNumber, setNewNumber] = useState('')
 
+  // Initial fetch from db.json (simulated)
   useEffect(() => {
     noteService
       .getAll()
-      .then(initialNotes => {
-        setNotes(initialNotes)
+      .then(response => {
+        console.log(response)
+        setPersons(response)
       })
   }, [])
 
-  const addNote = (event) => {
-    event.preventDefault()
-    const noteObject = {
-      content: newNote,
-      important: Math.random() > 0.5,
+  const addPerson = (e) => {
+    e.preventDefault()
+    if (!newName || !newNumber) return
+    const newPerson = {
+      name: newName,
+      number: newNumber,
+      id: (persons.length + 1).toString() // temporary ID
     }
 
     noteService
-      .create(noteObject)
+      .create(newPerson)
       .then(returnedNote => {
-        setNotes(notes.concat(returnedNote))
-        setNewNote('')
+        setPersons(persons.concat(returnedNote))
+        setNewName('')
+        setNewNumber('')
       })
+
   }
 
-  const handleNoteChange = (event) => {
-    setNewNote(event.target.value)
-  }
-
-  const notesToShow = showAll ? notes : notes.filter((note) => note.important)
-
-  const Note = ({ note, toggleImportance }) => {
-    const label = note.important
-      ? 'make not important' : 'make important'
-
-    return (
-      <li>
-        {note.content} 
-        <button onClick={toggleImportance}>{label}</button>
-      </li>
-    )
-  }
-
-  const toggleImportanceOf = id => {
-    const url = `http://localhost:3001/notes/${id}`
-    const note = notes.find(n => n.id === id)
-    const changedNote = { ...note, important: !note.important }
-
+  const deletePerson = (id) => {
+    setPersons(persons.filter(p => p.id !== id))
     noteService
-      .update(id, changedNote)
-      .then(returnedNote => {
-        setNotes(notes.map(note => note.id === id ? returnedNote : note))
-      })
+      .deletePerson(id)
   }
-
 
   return (
     <div>
-      <h1>Notes</h1>
-      <div>
-        <button onClick={() => setShowAll(!showAll)}>
-          show {showAll ? 'important' : 'all'}
-        </button>
-      </div>
+      <h2>Phonebook</h2>
+
+      <form onSubmit={addPerson}>
+        <div>
+          Name: <input value={newName} onChange={e => setNewName(e.target.value)} />
+        </div>
+        <div>
+          Number: <input value={newNumber} onChange={e => setNewNumber(e.target.value)} />
+        </div>
+        <button type="submit">Add</button>
+      </form>
+
+      <h3>Numbers</h3>
       <ul>
-        {notesToShow.map((note) => (
-          <Note key={note.id} note={note} toggleImportance={() => toggleImportanceOf(note.id)}/>
+        {persons.map(p => (
+          <li key={p.id}>
+            {p.name}: {p.number} 
+            <button onClick={() => deletePerson(p.id)}>Delete</button>
+          </li>
         ))}
       </ul>
-      <form onSubmit={addNote}>
-        <input value={newNote} onChange={handleNoteChange} />
-        <button type="submit">save</button>
-      </form>
     </div>
   )
 }
