@@ -20,26 +20,40 @@ const App = () => {
   const addPerson = (e) => {
     e.preventDefault()
     if (!newName || !newNumber) return
-    const newPerson = {
-      name: newName,
-      number: newNumber,
-      id: (persons.length + 1).toString() // temporary ID
-    }
 
-    noteService
-      .create(newPerson)
-      .then(returnedNote => {
-        setPersons(persons.concat(returnedNote))
-        setNewName('')
-        setNewNumber('')
-      })
+    const duplicate = persons.filter(p => p.name === newName)
+
+    if (duplicate.length !== 0){
+      const newPerson = {
+        name: newName,
+        number: newNumber,
+      }
+      noteService
+        .update(duplicate[0].id, newPerson)
+        .then(returnedPerson => {
+          setPersons(persons.map(p =>
+            p.id !== duplicate[0].id ? p : returnedPerson
+          ))
+        })
+    }else{
+      const newPerson = {
+        name: newName,
+        number: newNumber,
+      }
+
+      noteService
+        .create(newPerson)
+        .then(returnedNote => {
+          setPersons(persons.concat(returnedNote))
+          setNewName('')
+          setNewNumber('')
+        })
+      }
 
   }
 
   const deletePerson = (id) => {
     setPersons(persons.filter(p => p.id !== id))
-    noteService
-      .deletePerson(id)
   }
 
   return (
