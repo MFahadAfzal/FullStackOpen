@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import noteService from './services/notes'
+import Notification from './components/Notification'
+import './index.css'
+
 
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
+  const [errorMessage, setErrorMessage] = useState(null)
 
   // Initial fetch from db.json (simulated)
   useEffect(() => {
@@ -48,6 +52,9 @@ const App = () => {
           setNewName('')
           setNewNumber('')
         })
+        setErrorMessage("added " + newPerson.name + " to phonebook")
+        setTimeout(() =>{
+          setErrorMessage(null)}, 2000)
       }
 
   }
@@ -59,7 +66,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-
+      
       <form onSubmit={addPerson}>
         <div>
           Name: <input value={newName} onChange={e => setNewName(e.target.value)} />
@@ -69,7 +76,7 @@ const App = () => {
         </div>
         <button type="submit">Add</button>
       </form>
-
+      <Notification message={errorMessage} />
       <h3>Numbers</h3>
       <ul>
         {persons.map(p => (
