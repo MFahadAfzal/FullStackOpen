@@ -36,35 +36,35 @@ app.get('/api/persons', (request, response) => {
   response.json(persons)
 })
 
-app.get('/api/notes/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response) => {
   const id = request.params.id
-  const note = notes.find(note => note.id === id)
+  const person = persons.find(person => person.id === id)
   
-  if (note) {
-    response.json(note)
+  if (person) {
+    response.json(person)
   } else {
     response.status(404).end()
   }
 })
 
-app.delete('/api/notes/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response) => {
   const id = request.params.id
-  notes = notes.filter(note => note.id !== id)
+  persons = persons.filter(person => person.id !== id)
 
   response.status(204).end()
 })
 
-app.post('/api/notes', (request, response) => {
-  const maxId = notes.length > 0
-    ? Math.max(...notes.map(n => Number(n.id))) 
-    : 0
+app.post('/api/persons', (request, response) => {  
 
-  const note = request.body
-  note.id = String(maxId + 1)
+  const person = request.body
+  person.id = String(Math.floor(Math.random() * 1000000))
 
-  notes = notes.concat(note)
+  if(request.body.name === '' || request.body.number === '' || persons.find(person => person.name === request.body.name) != undefined){
+    return response.status(400).json({ error: 'name missing' })
+  }
+  persons = persons.concat(person)
 
-  response.json(note)
+  response.json(person)
 })
 
 const PORT = 3001
