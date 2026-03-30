@@ -1,32 +1,40 @@
 const mongoose = require('mongoose')
 
-if (process.argv.length < 3) {
-  console.log('give password as argument')
+if (process.argv.length != 3 && process.argv.length != 5) {
+  console.log('Please give a valid input')
   process.exit(1)
 }
 
 const password = process.argv[2]
 
-const url = `mongodb+srv://fahadafzal780_db_user:<db_password>@cluster0.gmhljyh.mongodb.net/?appName=Cluster0`
+const url = `mongodb+srv://fahadafzal780_db_user:${password}@cluster0.gmhljyh.mongodb.net/phonebookApp?retryWrites=true&w=majority&appName=Cluster0`
 
 
 mongoose.set('strictQuery',false)
 
 mongoose.connect(url, { family: 4 })
 
-const noteSchema = new mongoose.Schema({
-  content: String,
-  important: Boolean,
+const personSchema= new mongoose.Schema({
+  name: String,
+  number: String,
 })
 
-const Note = mongoose.model('Note', noteSchema)
+const Person = mongoose.model('Person', personSchema, 'phonebook')
+if(process.argv.length === 5){
+  const person = new Person({
+    name: process.argv[3],
+    number: process.argv[4]
+  })
 
-const note = new Note({
-  content: 'HTML is easy',
-  important: true,
-})
-
-note.save().then(result => {
-  console.log('note saved!')
-  mongoose.connection.close()
-})
+  person.save().then(result => {
+    console.log(`added ${process.argv[3]} number ${process.argv[4]} to phonebook`)
+    mongoose.connection.close()
+  })
+}else{
+  Person.find({}).then(result => {
+    result.forEach(person => {
+      console.log(person)
+    })
+    mongoose.connection.close()
+  })
+}
